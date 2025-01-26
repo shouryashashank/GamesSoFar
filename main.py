@@ -9,12 +9,15 @@ from addpage import AddPage
 def main(page: Page):
     def route_change(route):
         page.clean()
+        KEY = ""
+        steam = Steam(KEY)
         if page.route=='/':
-            page.add(MainApp(page))
+            page.add(MainApp(page,steam))
         elif page.route=='/add':
-            page.add(AddPage(page))
-
-
+            page.add(AddPage(page,steam))
+    if page.theme is None:
+        page.theme = Theme()
+    page.theme.use_material3 = True
     page.on_route_change = route_change
     page.go('/')
 

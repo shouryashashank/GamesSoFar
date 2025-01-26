@@ -5,15 +5,16 @@ from steam_web_api import Steam
 import datetime
 
 
-KEY = ""
-steam = Steam(KEY)
+
 
 ENABLE_ADS = True
 
 class MainApp(Control):
-    def __init__(self, page: Page):
+    def __init__(self, page: Page, steam: Steam):
         super().__init__()
         self.page = page
+        self.steam= steam
+        self.page.theme.use_material3 = True
         self.game_list = ListView(expand=1, spacing=10, padding=20, auto_scroll=False)  # Initialize game_list as a scrollable Column
         # self.text_field = TextField(label="Enter something", color="white")
         # self.save_button = ElevatedButton(text="Save", on_click=self.save_to_json)
@@ -35,7 +36,7 @@ class MainApp(Control):
         view = AppBar(
             title=Text("GamesSoFar"),
             actions=[
-                IconButton(icons.MENU, style=ButtonStyle(padding=0))
+                IconButton(Icons.MENU, style=ButtonStyle(padding=0))
             ]
         )
         return view
@@ -88,18 +89,24 @@ class MainApp(Control):
                 last_played = datetime.datetime.fromtimestamp(game_info["data"]["rtime_last_played"]).strftime('%Y-%m-%d %H:%M:%S')
                 completed = game_info["data"]["completed"]
                 short_description = game_info["data"]["short_description"][:100] + "..."  # Truncate description
+                website = game_info["data"]["website"]
+                list_item = ListTile(
+                    leading=Image(src=header_image),
+                    title=Text(name),
+                    subtitle=Text(f"Playtime: {play_time} minutes \nCompleted: {'Yes' if completed else 'No'} \nLast Played: {last_played}"),
+                    on_click=lambda e, link=website: self.page.launch_url(link)
+                )
                 
-                
-                content=Column([
-                    Image(src=header_image, width=200, height=100),
-                    Text(name, size=20, weight="bold"),
-                    Text(short_description),
-                    Text(f"Playtime: {play_time} minutes"),
-                    Text(f"Last Played: {last_played}"),
-                    Text(f"Completed: {'Yes' if completed else 'No'}")
+                # content=Column([
+                #     Image(src=header_image, width=200, height=100),
+                #     Text(name, size=20, weight="bold"),
+                #     Text(short_description),
+                #     Text(f"Playtime: {play_time} minutes"),
+                #     Text(f"Last Played: {last_played}"),
+                #     Text(f"Completed: {'Yes' if completed else 'No'}")
                     
-                ])
-                self.game_list.controls.append(content)
+                # ])
+                self.game_list.controls.append(list_item)
         
         self.page.update()
 
@@ -118,11 +125,11 @@ class MainApp(Control):
             self.page.add(Text("No data found", color="red"))
 
     def get_users_game_list(self,user_id):
-        user_games = steam.users.get_owned_games(user_id)
+        user_games = self.steam.users.get_owned_games(user_id)
         game_info = []
         for game in user_games.get("games"):
             try:
-                info = steam.apps.get_app_details(game["appid"])
+                info = self.steam.apps.get_app_details(game["appid"])
                 app_id = str(game["appid"])
                 fields = [
                 ("playtime_forever", 0),
