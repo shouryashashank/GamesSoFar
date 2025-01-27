@@ -1,2 +1,3 @@
 flet
 python-steam-api
+igdb-api-v4

@@ -172,3 +172,4 @@ cython_debug/
 user_input.json
 steam.ipynb
 games.json
+igdb.ipynb
