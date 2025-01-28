@@ -4,7 +4,7 @@ import json
 from steam_web_api import Steam
 import datetime
 from igdb.wrapper import IGDBWrapper
-
+from database import Database
 
 
 
@@ -17,9 +17,6 @@ class MainApp(Control):
         self.steam= steam
         self.page.theme.use_material3 = True
         self.game_list = ListView(expand=1, spacing=10, padding=20, auto_scroll=False)  # Initialize game_list as a scrollable Column
-        # self.text_field = TextField(label="Enter something", color="white")
-        # self.save_button = ElevatedButton(text="Save", on_click=self.save_to_json)
-        # self.read_button = ElevatedButton(text="Read", on_click=self.read_from_json)
         self.user_id_field = TextField(label="User ID")
         self.page.floating_action_button = FloatingActionButton(
                 icon=Icons.ADD,
@@ -78,9 +75,11 @@ class MainApp(Control):
             print(f"Error: {str(ex)}")
 
     def load_games(self, e):
-        with open("games.json", "r", encoding="utf-8") as f:
-            games_data = json.load(f)
-        
+        # with open("games.json", "r", encoding="utf-8") as f:
+        #     games_data = json.load(f)
+        db = Database()
+        db.connect_to_db()
+        games_data = db.read_game_db()
         self.game_list.controls.clear()
         for game in games_data:
             for game_id, game_info in game.items():
