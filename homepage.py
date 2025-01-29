@@ -5,8 +5,9 @@ from steam_web_api import Steam
 import datetime
 from igdb.wrapper import IGDBWrapper
 from database import Database
-
-
+from domain_model.game import Game
+from domain_model.user import User
+from mapper.steam_game import steam_to_game
 
 ENABLE_ADS = True
 
@@ -63,10 +64,12 @@ class MainApp(Control):
             user_id = self.user_id_field.value
             # Get user's game list
             games_data = self.get_users_game_list(user_id)
-            # Save to JSON
-            with open("games.json", "w") as f:
-                json.dump(games_data, f)
-            self.page.add(Text("Data saved to games.json", color="green"))
+            
+            # get game ojects from games_data
+            games = []
+            for game in games_data:
+                for game_id, game_info in game.items():
+                    games.append(steam_to_game(game_info))
 
             self.load_games(None)
             print("Games reloaded")
