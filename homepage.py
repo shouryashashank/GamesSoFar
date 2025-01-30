@@ -7,7 +7,7 @@ from igdb.wrapper import IGDBWrapper
 from database import Database
 from domain_model.game import Game
 from domain_model.user import User
-from mapper.steam_game import steam_to_game
+from mapper import steam_to_game
 
 ENABLE_ADS = True
 
@@ -65,11 +65,19 @@ class MainApp(Control):
             # Get user's game list
             games_data = self.get_users_game_list(user_id)
             
-            # get game ojects from games_data
+            # Get game objects from games_data
             games = []
-            for game in games_data:
-                for game_id, game_info in game.items():
-                    games.append(steam_to_game(game_info))
+            for game_info in games_data:
+                for game_id, game_details in game_info.items():
+                    if game_details['success']:
+                        game = steam_to_game(game_details['data'])
+                        games.append(game)
+        
+            # Save games to database
+            db = Database()
+            db.connect_to_db()
+            db.insert_multiple_games(games)
+            db.close_db()
 
             self.load_games(None)
             print("Games reloaded")
@@ -83,6 +91,7 @@ class MainApp(Control):
         db = Database()
         db.connect_to_db()
         games_data = db.read_game_db()
+        db.close_db()
         self.game_list.controls.clear()
         for game in games_data:
             for game_id, game_info in game.items():

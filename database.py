@@ -3,6 +3,7 @@ import flet as ft
 from datetime import datetime
 from domain_model.user import User
 from domain_model.game import Game
+import json
 
 class Database:
     def __init__(self):
@@ -28,7 +29,7 @@ class Database:
             
             c.execute(
                 """CREATE TABLE IF NOT EXISTS games (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                  name VARCHAR(255) NOT NULL,
+                                  name VARCHAR(255) NOT NULL UNIQUE,
                                   type VARCHAR(255),
                                   platform VARCHAR(255),
                                   marketplace VARCHAR(255),
@@ -120,26 +121,26 @@ class Database:
         games = []
         for row in rows:
             game = Game(
-                id=row['id'],
-                name=row['name'],
-                type=row['type'],
-                platform=row['platform'],
-                marketplace=row['marketplace'],
-                source=row['source'],
-                platform_appid=row['platform_appid'],
-                source_appid=row['source_appid'],
-                playtime_forever=row['playtime_forever'],
-                rtime_last_played=row['rtime_last_played'],
-                completed=row['completed'],
-                completed_date=row['completed_date'],
-                rating=row['rating'],
-                link=row['link'],
-                link2=row['link2'],
-                header_image=row['header_image'],
-                short_description=row['short_description'],
-                hide=row['hide'],
-                createddate=row['createddate'],
-                metadata=row['metadata']
+                id=row[0],
+                name=row[1],
+                type=row[2],
+                platform=row[3],
+                marketplace=row[4],
+                source=row[5],
+                platform_appid=row[6],
+                source_appid=row[7],
+                playtime_forever=row[8],
+                rtime_last_played=row[9],
+                completed=row[10],
+                completed_date=row[11],
+                rating=row[12],
+                link=row[13],
+                link2=row[14],
+                header_image=row[15],
+                short_description=row[16],
+                hide=row[17],
+                createddate=row[18],
+                metadata=row[19]
             )
             games.append(game)
 
@@ -152,13 +153,13 @@ class Database:
         :param games: List of Game objects.
         """
         try:
-            c = self.conn.cursor()
+            c = self.db.cursor()
             game_tuples = [
                 (
                     game.name, game.type, game.platform, game.marketplace, game.source, game.platform_appid, 
                     game.source_appid, game.playtime_forever, game.rtime_last_played, game.completed, 
                     game.completed_date, game.rating, game.link, game.link2, game.header_image, 
-                    game.short_description, game.hide, game.createddate, game.metadata
+                    game.short_description, game.hide, game.createddate, json.dumps(game.metadata)
                 )
                 for game in games
             ]
@@ -169,7 +170,7 @@ class Database:
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
                 game_tuples
             )
-            self.conn.commit()
+            self.db.commit()
             print("Multiple games inserted successfully.")
         except sqlite.DatabaseError as e:
             print("Error: Failed to insert multiple games")

@@ -1,5 +1,5 @@
-from ..domain_model import Game
-
+from domain_model.game import Game
+import datetime
 def steam_to_game(steam_json):
     game = Game(
         name=steam_json.get("name"),
@@ -14,6 +14,7 @@ def steam_to_game(steam_json):
         rating=steam_json.get("rating"),
         header_image=steam_json.get("header_image"),
         short_description=steam_json.get("short_description"),
-        metadata=steam_json
+        metadata=steam_json,
+        createddate= datetime.datetime.now().isoformat()
     )
     return game
