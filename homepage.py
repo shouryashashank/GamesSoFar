@@ -108,16 +108,6 @@ class MainApp(Control):
                     subtitle=Text(f"Playtime: {play_time} minutes \nCompleted: {'Yes' if completed else 'No'} \nLast Played: {last_played}"),
                     on_click=lambda e, link=website: self.page.launch_url(link)
                 )
-                
-                # content=Column([
-                #     Image(src=header_image, width=200, height=100),
-                #     Text(name, size=20, weight="bold"),
-                #     Text(short_description),
-                #     Text(f"Playtime: {play_time} minutes"),
-                #     Text(f"Last Played: {last_played}"),
-                #     Text(f"Completed: {'Yes' if completed else 'No'}")
-                    
-                # ])
                 self.game_list.controls.append(list_item)
         
         self.page.update()
