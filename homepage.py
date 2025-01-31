@@ -94,22 +94,21 @@ class MainApp(Control):
         db.close_db()
         self.game_list.controls.clear()
         for game in games_data:
-            for game_id, game_info in game.items():
-                header_image = game_info["data"]["header_image"]
-                name = game_info["data"]["name"]
-                play_time = game_info["data"]["playtime_forever"]
-                last_played = datetime.datetime.fromtimestamp(game_info["data"]["rtime_last_played"]).strftime('%Y-%m-%d %H:%M:%S')
-                completed = game_info["data"]["completed"]
-                short_description = game_info["data"]["short_description"][:100] + "..."  # Truncate description
-                website = game_info["data"]["website"]
-                list_item = ListTile(
-                    leading=Image(src=header_image),
-                    title=Text(name),
-                    subtitle=Text(f"Playtime: {play_time} minutes \nCompleted: {'Yes' if completed else 'No'} \nLast Played: {last_played}"),
-                    on_click=lambda e, link=website: self.page.launch_url(link)
-                )
-                self.game_list.controls.append(list_item)
-        
+            header_image = game.header_image
+            name = game.name
+            play_time = game.playtime_forever
+            last_played = game.rtime_last_played
+            completed = game.completed
+            short_description = game.short_description[:100] + "..."  # Truncate description
+            website = game.link
+            list_item = ListTile(
+                leading=Image(src=header_image),
+                title=Text(name),
+                subtitle=Text(f"Playtime: {play_time} minutes \nCompleted: {'Yes' if completed else 'No'} \nLast Played: {last_played}"),
+                on_click=lambda e, link=website: self.page.launch_url(link)
+            )
+            self.game_list.controls.append(list_item)
+    
         self.page.update()
 
 

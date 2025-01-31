@@ -8,7 +8,7 @@ def steam_to_game(steam_json):
         source="Steam",
         source_appid=steam_json.get("steam_appid"),
         playtime_forever=steam_json.get("playtime_forever"),
-        rtime_last_played=steam_json.get("rtime_last_played"),
+        rtime_last_played=datetime.datetime.fromtimestamp(steam_json.get("rtime_last_played")).isoformat(),
         completed=steam_json.get("completed"),
         completed_date=steam_json.get("completed_date"),
         rating=steam_json.get("rating"),

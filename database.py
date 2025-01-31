@@ -3,6 +3,7 @@ import flet as ft
 from datetime import datetime
 from domain_model.user import User
 from domain_model.game import Game
+from typing import List
 import json
 
 class Database:
@@ -85,8 +86,7 @@ class Database:
         self.db.commit()
     
     # crud op on game
-
-    def read_game_db(self, filters=None, sort_by=None, limit=None):
+    def read_game_db(self, filters=None, sort_by=None, limit=None) -> List[Game]:
         """
         Read game data from database with optional filters, sorting, and limit.
         
