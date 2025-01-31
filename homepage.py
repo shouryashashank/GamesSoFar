@@ -3,7 +3,6 @@ import flet.ads as ads
 import json
 from steam_web_api import Steam
 import datetime
-from igdb.wrapper import IGDBWrapper
 from database import Database
 from domain_model.game import Game
 from domain_model.user import User
