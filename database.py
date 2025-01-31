@@ -1,6 +1,10 @@
 import sqlite3 as sqlite
 import flet as ft
 from datetime import datetime
+from domain_model.user import User
+from domain_model.game import Game
+from typing import List
+import json
 
 class Database:
     def __init__(self):
@@ -14,6 +18,7 @@ class Database:
                 """CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, 
 								  name VARCHAR(100) NOT NULL, 
 								  createddate DATETIME NOT NULL, 
+                                  lastupdated DATETIME NOT NULL, 
 								  steamid VARCHAR(50),
 								  googleid VARCHAR(255),
 								  epicid VARCHAR(255),
@@ -25,7 +30,7 @@ class Database:
             
             c.execute(
                 """CREATE TABLE IF NOT EXISTS games (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                  name VARCHAR(255) NOT NULL,
+                                  name VARCHAR(255) NOT NULL UNIQUE,
                                   type VARCHAR(255),
                                   platform VARCHAR(255),
                                   marketplace VARCHAR(255),
@@ -57,33 +62,38 @@ class Database:
         c = self.db.cursor()
         c.execute("SELECT * FROM users")
         rows = c.fetchall()
-        return rows
+        
+        users = []
+        for row in rows:
+            user = User(id=row[0], name=row[1], createddate=row[2], lastupdated=row[3], steamid=row[4], googleid=row[5], epicid=row[6], gogid=row[7], psid=row[8], xboxid=row[9], nintendoid=row[10], metadata=row[11])
+            users.append(user)
+        
+        return users
     
-    def create_user(self, name, steamid, googleid, epicid, gogid, psid, xboxid, nintendoid, metadata):
+    def create_user(self, user):
         """ Create a new user """
         c = self.db.cursor()
         c.execute("INSERT INTO users (name, createddate, steamid, googleid, epicid, gogid, psid, xboxid, nintendoid, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                  (name, datetime.now(), steamid, googleid, epicid, gogid, psid, xboxid, nintendoid, metadata))
+                (user.name, user.createddate, user.steamid, user.googleid, user.epicid, user.gogid, user.psid, user.xboxid, user.nintendoid, user.metadata))
         self.db.commit()
         return c.lastrowid
     
-    def update_user(self, user_id, name, steamid, googleid, epicid, gogid, psid, xboxid, nintendoid, metadata):
+    def update_user(self, user):
         """ Update an existing user """
         c = self.db.cursor()
         c.execute("UPDATE users SET name = ?, steamid = ?, googleid = ?, epicid = ?, gogid = ?, psid = ?, xboxid = ?, nintendoid = ?, metadata = ? WHERE id = ?",
-                  (name, steamid, googleid, epicid, gogid, psid, xboxid, nintendoid, metadata, user_id))
+                (user.name, user.steamid, user.googleid, user.epicid, user.gogid, user.psid, user.xboxid, user.nintendoid, user.metadata, user.id))
         self.db.commit()
     
     # crud op on game
-
-    def read_game_db(self, filters=None, sort_by=None, limit=None):
+    def read_game_db(self, filters=None, sort_by=None, limit=None) -> List[Game]:
         """
         Read game data from database with optional filters, sorting, and limit.
         
         :param filters: Dictionary of column-value pairs to filter the results.
         :param sort_by: Column name to sort the results by.
         :param limit: Maximum number of results to return.
-        :return: List of rows matching the query.
+        :return: List of Game objects matching the query.
         """
         query = "SELECT * FROM games"
         params = []
@@ -107,35 +117,79 @@ class Database:
         c = self.db.cursor()
         c.execute(query, params)
         rows = c.fetchall()
-        return rows
+
+        games = []
+        for row in rows:
+            game = Game(
+                id=row[0],
+                name=row[1],
+                type=row[2],
+                platform=row[3],
+                marketplace=row[4],
+                source=row[5],
+                platform_appid=row[6],
+                source_appid=row[7],
+                playtime_forever=row[8],
+                rtime_last_played=row[9],
+                completed=row[10],
+                completed_date=row[11],
+                rating=row[12],
+                link=row[13],
+                link2=row[14],
+                header_image=row[15],
+                short_description=row[16],
+                hide=row[17],
+                createddate=row[18],
+                metadata=row[19]
+            )
+            games.append(game)
+
+        return games
     
     def insert_multiple_games(self, games):
         """
         Insert multiple games into the games table.
         
-        :param games: List of tuples, where each tuple contains the game data.
+        :param games: List of Game objects.
         """
         try:
-            c = self.conn.cursor()
+            c = self.db.cursor()
+            game_tuples = [
+                (
+                    game.name, game.type, game.platform, game.marketplace, game.source, game.platform_appid, 
+                    game.source_appid, game.playtime_forever, game.rtime_last_played, game.completed, 
+                    game.completed_date, game.rating, game.link, game.link2, game.header_image, 
+                    game.short_description, game.hide, game.createddate, json.dumps(game.metadata)
+                )
+                for game in games
+            ]
             c.executemany(
                 """INSERT INTO games (name, type, platform, marketplace, source, platform_appid, source_appid, playtime_forever, 
                                     rtime_last_played, completed, completed_date, rating, link, link2, header_image, 
                                     short_description, hide, createddate, metadata) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
-                games
+                game_tuples
             )
-            self.conn.commit()
+            self.db.commit()
             print("Multiple games inserted successfully.")
         except sqlite.DatabaseError as e:
             print("Error: Failed to insert multiple games")
             print(e)
 
-    def update_game(self, game_id, name, type, platform, marketplace, source, platform_appid, source_appid, playtime_forever, 
-                    rtime_last_played, completed, completed_date, rating, link, link2, header_image, short_description, hide, metadata):
+    def update_game(self, game):
         """ Update an existing game """
         c = self.db.cursor()
-        c.execute("UPDATE games SET name = ?, type = ?, platform = ?, marketplace = ?, source = ?, platform_appid = ?, source_appid = ?, playtime_forever = ?, rtime_last_played = ?, completed = ?, completed_date = ?, rating = ?, link = ?, link2 = ?, header_image = ?, short_description = ?, hide = ?, metadata = ? WHERE id = ?",
-                  (name, type, platform, marketplace, source, platform_appid, source_appid, playtime_forever, rtime_last_played, completed, completed_date, rating, link, link2, header_image, short_description, hide, metadata, game_id))
+        c.execute(
+            """UPDATE games SET name = ?, type = ?, platform = ?, marketplace = ?, source = ?, platform_appid = ?, 
+            source_appid = ?, playtime_forever = ?, rtime_last_played = ?, completed = ?, completed_date = ?, rating = ?, 
+            link = ?, link2 = ?, header_image = ?, short_description = ?, hide = ?, metadata = ? WHERE id = ?""",
+            (
+                game.name, game.type, game.platform, game.marketplace, game.source, game.platform_appid, 
+                game.source_appid, game.playtime_forever, game.rtime_last_played, game.completed, 
+                game.completed_date, game.rating, game.link, game.link2, game.header_image, 
+                game.short_description, game.hide, game.metadata, game.id
+            )
+        )
         self.db.commit()
 
     def delete_game(self, game_id):

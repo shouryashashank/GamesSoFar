@@ -4,9 +4,10 @@ import json
 from steam_web_api import Steam
 import datetime
 from igdb.wrapper import IGDBWrapper
-
-
-
+from database import Database
+from domain_model.game import Game
+from domain_model.user import User
+from mapper import steam_to_game
 
 ENABLE_ADS = True
 
@@ -17,9 +18,6 @@ class MainApp(Control):
         self.steam= steam
         self.page.theme.use_material3 = True
         self.game_list = ListView(expand=1, spacing=10, padding=20, auto_scroll=False)  # Initialize game_list as a scrollable Column
-        # self.text_field = TextField(label="Enter something", color="white")
-        # self.save_button = ElevatedButton(text="Save", on_click=self.save_to_json)
-        # self.read_button = ElevatedButton(text="Read", on_click=self.read_from_json)
         self.user_id_field = TextField(label="User ID")
         self.page.floating_action_button = FloatingActionButton(
                 icon=Icons.ADD,
@@ -66,10 +64,20 @@ class MainApp(Control):
             user_id = self.user_id_field.value
             # Get user's game list
             games_data = self.get_users_game_list(user_id)
-            # Save to JSON
-            with open("games.json", "w") as f:
-                json.dump(games_data, f)
-            self.page.add(Text("Data saved to games.json", color="green"))
+            
+            # Get game objects from games_data
+            games = []
+            for game_info in games_data:
+                for game_id, game_details in game_info.items():
+                    if game_details['success']:
+                        game = steam_to_game(game_details['data'])
+                        games.append(game)
+        
+            # Save games to database
+            db = Database()
+            db.connect_to_db()
+            db.insert_multiple_games(games)
+            db.close_db()
 
             self.load_games(None)
             print("Games reloaded")
@@ -78,37 +86,29 @@ class MainApp(Control):
             print(f"Error: {str(ex)}")
 
     def load_games(self, e):
-        with open("games.json", "r", encoding="utf-8") as f:
-            games_data = json.load(f)
-        
+        # with open("games.json", "r", encoding="utf-8") as f:
+        #     games_data = json.load(f)
+        db = Database()
+        db.connect_to_db()
+        games_data = db.read_game_db()
+        db.close_db()
         self.game_list.controls.clear()
         for game in games_data:
-            for game_id, game_info in game.items():
-                header_image = game_info["data"]["header_image"]
-                name = game_info["data"]["name"]
-                play_time = game_info["data"]["playtime_forever"]
-                last_played = datetime.datetime.fromtimestamp(game_info["data"]["rtime_last_played"]).strftime('%Y-%m-%d %H:%M:%S')
-                completed = game_info["data"]["completed"]
-                short_description = game_info["data"]["short_description"][:100] + "..."  # Truncate description
-                website = game_info["data"]["website"]
-                list_item = ListTile(
-                    leading=Image(src=header_image),
-                    title=Text(name),
-                    subtitle=Text(f"Playtime: {play_time} minutes \nCompleted: {'Yes' if completed else 'No'} \nLast Played: {last_played}"),
-                    on_click=lambda e, link=website: self.page.launch_url(link)
-                )
-                
-                # content=Column([
-                #     Image(src=header_image, width=200, height=100),
-                #     Text(name, size=20, weight="bold"),
-                #     Text(short_description),
-                #     Text(f"Playtime: {play_time} minutes"),
-                #     Text(f"Last Played: {last_played}"),
-                #     Text(f"Completed: {'Yes' if completed else 'No'}")
-                    
-                # ])
-                self.game_list.controls.append(list_item)
-        
+            header_image = game.header_image
+            name = game.name
+            play_time = game.playtime_forever
+            last_played = game.rtime_last_played
+            completed = game.completed
+            short_description = game.short_description[:100] + "..."  # Truncate description
+            website = game.link
+            list_item = ListTile(
+                leading=Image(src=header_image),
+                title=Text(name),
+                subtitle=Text(f"Playtime: {play_time} minutes \nCompleted: {'Yes' if completed else 'No'} \nLast Played: {last_played}"),
+                on_click=lambda e, link=website: self.page.launch_url(link)
+            )
+            self.game_list.controls.append(list_item)
+    
         self.page.update()
 
 
