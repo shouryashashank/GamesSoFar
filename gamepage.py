@@ -41,10 +41,12 @@ class GamePage(Control):
         
         # Create a container for the image
         image_container = Container(
-            content=Image(src=self.game.header_image),
-            padding=10
+            content=Image(src=self.game.header_image, fit="cover"),
+            padding=0,
+            width="100%"
         )
-        
+        if isinstance(self.game.metadata, str):
+            self.game.metadata = json.loads(self.game.metadata)
         # Create a container for the game details
         details_container = Container(
             content=Column([
@@ -59,18 +61,28 @@ class GamePage(Control):
                 Text(f"Link2: {self.game.link2}", style="body2"),
                 Text(f"Hide: {self.game.hide}", style="body2"),
                 Text(f"Created Date: {self.game.createddate}", style="body2"),
-                Text(f"Metadata: {self.game.metadata}", style="body2"),
+                # Additional metadata fields
+                Text(f"Type: {self.game.metadata.get('type', 'N/A')}", style="body2"),
+                Text(f"Steam App ID: {self.game.metadata.get('steam_appid', 'N/A')}", style="body2"),
+                Text(f"Required Age: {self.game.metadata.get('required_age', 'N/A')}", style="body2"),
+                Text(f"Is Free: {self.game.metadata.get('is_free', 'N/A')}", style="body2"),
+                Text(f"Supported Languages: {self.game.metadata.get('supported_languages', 'N/A')}", style="body2"),
+                Text(f"Reviews: {self.game.metadata.get('reviews', 'N/A')}", style="body2"),
+                Text(f"Website: {self.game.metadata.get('website', 'N/A')}", style="body2"),
+                Text(f"PC Requirements: {self.game.metadata.get('pc_requirements', 'N/A')}", style="body2"),
+                Text(f"Legal Notice: {self.game.metadata.get('legal_notice', 'N/A')}", style="body2"),
             ]),
             padding=10
         )
-        # Arrange the image and details in a row
-        content_row = Row([
+        
+        # Arrange the image and details in a column
+        content_column = ListView([
             image_container,
             details_container
-        ])
+        ],expand=1)
         
-        safe_area = SafeArea(content=content_row)
-        self.page.add(safe_area)
+        # safe_area = SafeArea(content=content_column)
+        self.page.add(content_column)
 
     def go_home(self, e):
         self.page.go('/')
