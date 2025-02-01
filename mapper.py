@@ -15,6 +15,8 @@ def steam_to_game(steam_json):
         header_image=steam_json.get("header_image"),
         short_description=steam_json.get("short_description"),
         metadata=steam_json,
-        createddate= datetime.datetime.now().isoformat()
+        createddate= datetime.datetime.now().isoformat(),
+        link="https://store.steampowered.com/app/"+str(steam_json.get("steam_appid")),
+        link2=steam_json.get("website")
     )
     return game

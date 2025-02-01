@@ -7,6 +7,7 @@ from database import Database
 from domain_model.game import Game
 from domain_model.user import User
 from mapper import steam_to_game
+from gamepage import GamePage
 
 ENABLE_ADS = True
 
@@ -57,6 +58,9 @@ class MainApp(Control):
     
     def open_new_page(self, e):
         self.page.go('/add')
+    
+    def open_game_page(self,game_id):
+        self.page.go('/game/'+str(game_id))
 
     def reload_games(self, e):
         try:
@@ -104,7 +108,7 @@ class MainApp(Control):
                 leading=Image(src=header_image),
                 title=Text(name),
                 subtitle=Text(f"Playtime: {play_time} minutes \nCompleted: {'Yes' if completed else 'No'} \nLast Played: {last_played}"),
-                on_click=lambda e, link=website: self.page.launch_url(link)
+                on_click=lambda _, game_id=game.id: self.open_game_page(game_id)
             )
             self.game_list.controls.append(list_item)
     
