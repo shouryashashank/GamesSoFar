@@ -146,6 +146,37 @@ class Database:
 
         return games
     
+    def get_game_by_id(self, game_id) -> Game:
+        """ Get a game by its ID """
+        c = self.db.cursor()
+        c.execute("SELECT * FROM games WHERE id = ?", (game_id,))
+        row = c.fetchone()
+        if row:
+            game = Game(
+                id=row[0],
+                name=row[1],
+                type=row[2],
+                platform=row[3],
+                marketplace=row[4],
+                source=row[5],
+                platform_appid=row[6],
+                source_appid=row[7],
+                playtime_forever=row[8],
+                rtime_last_played=row[9],
+                completed=row[10],
+                completed_date=row[11],
+                rating=row[12],
+                link=row[13],
+                link2=row[14],
+                header_image=row[15],
+                short_description=row[16],
+                hide=row[17],
+                createddate=row[18],
+                metadata=row[19]
+            )
+            return game
+        return None
+
     def insert_multiple_games(self, games):
         """
         Insert multiple games into the games table.
