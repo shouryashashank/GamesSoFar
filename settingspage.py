@@ -22,6 +22,7 @@ class SettingsPage(Control):
             )
         self.setup_ui()
 
+
     def _get_control_name(self):
         return "container"
     
@@ -33,7 +34,7 @@ class SettingsPage(Control):
                 on_click=self.go_home
             ),
             actions=[
-                IconButton(Icons.CLOSE, style=ButtonStyle(padding=0))
+                IconButton(Icons.CLOSE, style=ButtonStyle(padding=0),on_click=self.go_home)
             ]
         )
         return view
@@ -47,6 +48,7 @@ class SettingsPage(Control):
         users = self.db.read_user_db()
         self.db.close_db()
         if users:
+            self.is_new_user = False
             self.user = users[0]  # Assuming single user for simplicity
             self.name_field = TextField(label="Name", value=self.user.name)
             self.steamid_field = TextField(label="Steam ID", value=self.user.steamid)
@@ -58,6 +60,7 @@ class SettingsPage(Control):
             self.nintendoid_field = TextField(label="Nintendo ID", value=self.user.nintendoid)
             self.metadata_field = TextField(label="Metadata", value=self.user.metadata)
         else:
+            self.is_new_user = True
             self.user = User()  # Create a new user instance
             self.name_field = TextField(label="Name")
             self.steamid_field = TextField(label="Steam ID")
@@ -98,7 +101,13 @@ class SettingsPage(Control):
             self.user.nintendoid = self.nintendoid_field.value
             self.user.metadata = self.metadata_field.value
             self.db.connect_to_db()
-            self.db.update_user(self.user)
+            if self.is_new_user:
+                self.user.createddate = datetime.datetime.now()
+                self.user.lastupdated = datetime.datetime.now()
+                self.db.create_user(self.user)
+            else:
+                self.user.lastupdated = datetime.datetime.now()
+                self.db.update_user(self.user)
             self.db.close_db()
             self.page.snack_bar = SnackBar(Text("User data saved successfully!"))
             self.page.snack_bar.open = True

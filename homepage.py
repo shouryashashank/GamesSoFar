@@ -18,7 +18,7 @@ class MainApp(Control):
         self.steam= steam
         self.page.theme.use_material3 = True
         self.game_list = ListView(expand=1, spacing=10, padding=20, auto_scroll=False)  # Initialize game_list as a scrollable Column
-        self.user_id_field = TextField(label="User ID")
+        # self.user_id_field = TextField(label="User ID")
         self.page.floating_action_button = FloatingActionButton(
                 icon=Icons.ADD,
                 data=0,
@@ -50,7 +50,7 @@ class MainApp(Control):
                 content=Column([
 
                     
-                    self.user_id_field,
+                    # self.user_id_field,
                     ElevatedButton(text="Load Games", on_click=self.reload_games),
                                      
                 
@@ -68,7 +68,9 @@ class MainApp(Control):
 
     def reload_games(self, e):
         try:
-            user_id = self.user_id_field.value
+            db = Database()
+            db.connect_to_db()
+            user_id = db.read_user_db()[0].steamid
             # Get user's game list
             games_data = self.get_users_game_list(user_id)
             
@@ -81,8 +83,7 @@ class MainApp(Control):
                         games.append(game)
         
             # Save games to database
-            db = Database()
-            db.connect_to_db()
+            
             db.insert_multiple_games(games)
             db.close_db()
 
