@@ -6,6 +6,7 @@ import datetime
 from homepage import MainApp
 from addpage import AddPage
 from gamepage import GamePage
+from settingspage import SettingsPage  # Import SettingsPage
 from domain_model.game import Game
 from database import Database
 
@@ -14,14 +15,16 @@ def main(page: Page):
         page.clean()
         KEY = ""
         steam = Steam(KEY)
-        if page.route=='/':
-            page.add(MainApp(page,steam))
-        elif page.route=='/add':
-            page.add(AddPage(page,steam))
+        if page.route == '/':
+            page.add(MainApp(page, steam))
+        elif page.route == '/add':
+            page.add(AddPage(page, steam))
         elif page.route.startswith('/game/'):
             game_id = int(page.route.split('/')[-1])
-            game = get_game_by_id(game_id)  
+            game = get_game_by_id(game_id)
             page.add(GamePage(page, steam, game))
+        elif page.route == '/settings':  # Add route for settings
+            page.add(SettingsPage(page, steam))
     def get_game_by_id(game_id):
         db = Database()
         db.connect_to_db()

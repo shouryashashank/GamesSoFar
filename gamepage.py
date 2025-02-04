@@ -20,6 +20,7 @@ class GamePage(Control):
             )
         self.setup_ui()
 
+
     def _get_control_name(self):
         return "container"
     
@@ -31,10 +32,13 @@ class GamePage(Control):
                 on_click=self.go_home
             ),
             actions=[
-                IconButton(Icons.MENU, style=ButtonStyle(padding=0))
+                IconButton(Icons.MENU, style=ButtonStyle(padding=0), on_click=self.open_settings_page)  # Add on_click event
             ]
         )
         return view
+    
+    def open_settings_page(self, e):
+        self.page.go('/settings')
     
     def setup_ui(self):
         self.page.add(self.app_bar())

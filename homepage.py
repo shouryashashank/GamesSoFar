@@ -35,10 +35,14 @@ class MainApp(Control):
         view = AppBar(
             title=Text("GamesSoFar"),
             actions=[
-                IconButton(Icons.MENU, style=ButtonStyle(padding=0))
+                IconButton(Icons.MENU, style=ButtonStyle(padding=0), on_click=self.open_settings_page)  # Add on_click event
             ]
         )
         return view
+
+    def open_settings_page(self, e):
+        self.page.go('/settings')
+        
     def setup_ui(self):
         self.page.add(self.app_bar())
         self.page.add(

@@ -73,16 +73,16 @@ class Database:
     def create_user(self, user):
         """ Create a new user """
         c = self.db.cursor()
-        c.execute("INSERT INTO users (name, createddate, steamid, googleid, epicid, gogid, psid, xboxid, nintendoid, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (user.name, user.createddate, user.steamid, user.googleid, user.epicid, user.gogid, user.psid, user.xboxid, user.nintendoid, user.metadata))
+        c.execute("INSERT INTO users (name, createddate, lastupdated, steamid, googleid, epicid, gogid, psid, xboxid, nintendoid, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (user.name, user.createddate, datetime.now(), user.steamid, user.googleid, user.epicid, user.gogid, user.psid, user.xboxid, user.nintendoid, user.metadata))
         self.db.commit()
         return c.lastrowid
     
     def update_user(self, user):
         """ Update an existing user """
         c = self.db.cursor()
-        c.execute("UPDATE users SET name = ?, steamid = ?, googleid = ?, epicid = ?, gogid = ?, psid = ?, xboxid = ?, nintendoid = ?, metadata = ? WHERE id = ?",
-                (user.name, user.steamid, user.googleid, user.epicid, user.gogid, user.psid, user.xboxid, user.nintendoid, user.metadata, user.id))
+        c.execute("UPDATE users SET name = ?, steamid = ?, googleid = ?, epicid = ?, gogid = ?, psid = ?, xboxid = ?, nintendoid = ?, metadata = ?, lastupdated = ? WHERE id = ?",
+                (user.name, user.steamid, user.googleid, user.epicid, user.gogid, user.psid, user.xboxid, user.nintendoid, user.metadata, datetime.now(), user.id))
         self.db.commit()
     
     # crud op on game
@@ -235,4 +235,3 @@ class Database:
             self.db.close()
             print("Database connection closed.")
 
-    
