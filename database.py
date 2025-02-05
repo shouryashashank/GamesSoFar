@@ -1,3 +1,4 @@
+from pathlib import Path
 import sqlite3 as sqlite
 import flet as ft
 from datetime import datetime
@@ -12,7 +13,8 @@ class Database:
 
     def connect_to_db(self):
         try:
-            self.db = sqlite.connect("game.db")
+            db_path = Path(__file__).parent.joinpath("assets/game.db")
+            self.db = sqlite.connect(db_path)
             c = self.db.cursor()
             c.execute(
                 """CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, 
