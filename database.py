@@ -13,7 +13,9 @@ class Database:
 
     def connect_to_db(self):
         try:
-            db_path = Path(__file__).parent.joinpath("assets/game.db")
+            db_path = Path(__file__).parent.parent.joinpath("game.db")
+           
+            self.db_path = db_path
             self.db = sqlite.connect(db_path)
             c = self.db.cursor()
             c.execute(
@@ -53,12 +55,14 @@ class Database:
                                   metadata VARCHAR(255))""")
             
             print("Database connected and table ensured.")
+            
         except sqlite.DatabaseError as e:
             print("Error: Database not found")
             print(e)
     
     # crud op on user
-
+    def return_db_path(self):
+        return self.db_path
     def read_user_db(self):
         """ Read user data from database """
         c = self.db.cursor()

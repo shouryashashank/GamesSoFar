@@ -11,6 +11,42 @@ from domain_model.game import Game
 from database import Database
 
 def main(page: Page):
+    def Dialog(title,content,lista):
+
+        d=AlertDialog(
+            open=False,
+            title=Text(title, ),
+            content=Text(content, ),
+            actions=lista,
+            icon=Icon(icons.ERROR_OUTLINE, ),
+            icon_padding=padding.only(top=20, bottom=10),
+            actions_alignment=MainAxisAlignment.END
+        )
+
+        return d
+    
+    def close_dialog(d):
+
+        global dialog5
+        page.close(dialog5)
+    
+    def Destroy():
+
+        page.window.destroy()
+
+
+    def BACK(): # For routing with "back" Android button
+
+        global dialog5
+
+        if page.views[-1].route == "/": # Open a exit dialog instead of exit directly (Destroy())
+
+            page.open(dialog5)
+
+        else: # Return to main page if you are not in there
+
+            page.go("/")
+
     def route_change(route):
         page.clean()
         KEY = ""
@@ -36,5 +72,8 @@ def main(page: Page):
     page.theme.use_material3 = True
     page.on_route_change = route_change
     page.go('/')
+    dialog5 = Dialog("Exit.", "Want to exit?", [TextButton("No", on_click=lambda _: close_dialog(dialog5)), TextButton("Yes", on_click=lambda _: Destroy())])
+    page.window.prevent_close = False # Necesary
+    page.on_view_pop = lambda _: BACK() # For routing with "back" Android button
 
 app(target=main)

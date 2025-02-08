@@ -98,6 +98,8 @@ class MainApp(Control):
         #     games_data = json.load(f)
         db = Database()
         db.connect_to_db()
+        db_path = db.return_db_path()
+        self.page.add(Text(db_path, color="red"))
         games_data = db.read_game_db()
         db.close_db()
         self.game_list.controls.clear()
